@@ -112,6 +112,18 @@
                     <label for="recipient" class="block mb-2 text-sm font-medium text-gray-700">Příjemce</label>
                     <input type="email" id="recipient" name="recipient" required class="form-input w-full p-2.5 border border-gray-300 rounded-lg" placeholder="jmeno.prijmeni@email.cz">
                 </div>
+
+                <div id="custom-fields-container" class="space-y-5 hidden">
+                    <div>
+                        <label for="dropbox-link" class="block mb-2 text-sm font-medium text-gray-700">Odkaz na Dropbox</label>
+                        <input type="url" id="dropbox-link" name="dropbox-link" class="form-input w-full p-2.5 border border-gray-300 rounded-lg" placeholder="https://www.dropbox.com/...">
+                    </div>
+                    <div>
+                        <label for="tour-link" class="block mb-2 text-sm font-medium text-gray-700">Odkaz na prohlídku</label>
+                        <input type="url" id="tour-link" name="tour-link" class="form-input w-full p-2.5 border border-gray-300 rounded-lg" placeholder="https://www.google.com/maps...">
+                    </div>
+                </div>
+
                 <div>
                     <label for="subject" class="block mb-2 text-sm font-medium text-gray-700">Předmět</label>
                     <input type="text" id="subject" name="subject" readonly class="form-input w-full p-2.5 border border-gray-300 rounded-lg bg-gray-100">
@@ -136,22 +148,22 @@
             obchod: {
                 name: 'Obchodní oddělení',
                 templates: [
-                    { id: 'ob-spoluprace', name: 'Dotaz na spolupráci', subject: 'Nabídka spolupráce', body: `Dobrý den,\n\nměl bych zájem o navázání spolupráce s Vaší společností...\n\nS pozdravem,\n[VAŠE JMÉNO]` },
-                    { id: 'ob-nabidka', name: 'Žádost o cenovou nabídku', subject: 'Poptávka cenové nabídky', body: `Dobrý den,\n\nrád bych Vás požádal o vypracování cenové nabídky...\n\nDěkuji,\n[VAŠE JMÉNO]` }
+                    { id: 'ob-test', name: 'Test', subject: 'Testovací email', body: 'Toto je testovací šablona.' }
                 ]
             },
             gmf: {
                 name: 'Support Google Moje Firma',
                 templates: [
-                    { id: 'gmf-problem', name: 'Hlášení problému s profilem', subject: 'Problém s GMF profilem', body: `Dobrý den,\n\nobracím se na Vás s problémem ohledně našeho GMF profilu...\n\nDěkuji za pomoc,\n[VAŠE JMÉNO]` },
-                    { id: 'gmf-dotaz', name: 'Obecný dotaz', subject: 'Dotaz - Google Moje Firma', body: `Dobrý den,\n\nměl bych dotaz týkající se správy GMF...\n\nS pozdravem,\n[VAŠE JMÉNO]` }
+                     { id: 'gmf-test', name: 'Test', subject: 'Testovací email', body: 'Toto je testovací šablona.' }
                 ]
             },
             sv: {
                 name: 'Support Google Street View',
                 templates: [
-                    { id: 'sv-info', name: 'Žádost o informace', subject: 'Dotaz ohledně Google Street View', body: `Dobrý den,\n\nměl bych zájem o focení Street View pro naši provozovnu...\n\nDěkuji,\n[VAŠE JMÉNO]` },
-                    { id: 'sv-termin', name: 'Návrh termínu focení', subject: 'Street View - návrh termínu', body: `Dobrý den,\n\nděkujeme za Váš zájem. Navrhujeme následující termíny pro focení...\n\nS pozdravem,\n[VAŠE JMÉNO]` }
+                    { id: 'sv-cz', name: 'Vaše prohlídka je hotová! :-)', subject: 'Vaše virtuální prohlídka je připravena', body: 'Dobrý den,\n\nvaše virtuální prohlídka je hotová a připravena k použití.\n\nS pozdravem,\nTým Street View', hasCustomFields: true },
+                    { id: 'sv-en', name: 'Your virtual tour is complete! :-)', subject: 'Your virtual tour is ready', body: 'Hello,\n\nyour virtual tour is complete and ready to use.\n\nRegards,\nStreet View Team', hasCustomFields: true },
+                    { id: 'sv-sk', name: 'Vaša prehliadka je hotová! :-)', subject: 'Vaša virtuálna prehliadka je pripravená', body: 'Dobrý deň,\n\nvaša virtuálna prehliadka je hotová a pripravená na použitie.\n\nS pozdravom,\nTím Street View', hasCustomFields: true },
+                    { id: 'sv-hu', name: 'Az Ön virtuális túrája! :-)', subject: 'Az Ön virtuális túrája elkészült', body: 'Jó napot,\n\nvirtuális túrája elkészült és használatra kész.\n\nÜdvözlettel,\nA Street View csapata', hasCustomFields: true }
                 ]
             }
         };
@@ -173,6 +185,7 @@
         const bodyTextarea = document.getElementById('body');
         const sendButton = document.getElementById('send-button');
         const statusMessage = document.getElementById('status-message');
+        const customFieldsContainer = document.getElementById('custom-fields-container');
 
 
         function showView(viewId) {
@@ -215,12 +228,36 @@
             bodyTextarea.value = template.body;
             recipientInput.value = '';
             statusMessage.classList.add('hidden');
+            
+            document.getElementById('dropbox-link').value = '';
+            document.getElementById('tour-link').value = '';
+
+            if (template.hasCustomFields) {
+                customFieldsContainer.classList.remove('hidden');
+                subjectInput.readOnly = false;
+                bodyTextarea.readOnly = false;
+                subjectInput.classList.remove('bg-gray-100');
+                bodyTextarea.classList.remove('bg-gray-100');
+            } else {
+                customFieldsContainer.classList.add('hidden');
+                subjectInput.readOnly = true;
+                bodyTextarea.readOnly = true;
+                subjectInput.classList.add('bg-gray-100');
+                bodyTextarea.classList.add('bg-gray-100');
+            }
+
             modalOverlay.classList.remove('hidden');
         }
 
         function closeModal() {
             modalOverlay.classList.add('hidden');
             emailForm.reset();
+            // Reset to default readonly state
+            customFieldsContainer.classList.add('hidden');
+            subjectInput.readOnly = true;
+            bodyTextarea.readOnly = true;
+            subjectInput.classList.add('bg-gray-100');
+            bodyTextarea.classList.add('bg-gray-100');
         }
 
         // --- Event Listenery ---
@@ -280,7 +317,4 @@
     </script>
 </body>
 </html>
-
-
-
 
